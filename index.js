@@ -50,6 +50,31 @@ class DiscordExtension extends Extension {
 					},
 				]
 			},
+			{
+				label: 'Deaf',
+				value: "headphone",
+				icon: 'headphones',
+				color: '#5865F2',
+				input:[
+					{
+						label: "Action",
+						ref: "action",
+						type: INPUT_METHOD.INPUT_SELECT,
+						items:[
+							{
+								value: "toggle_headphone",
+								label: "Toggle Deaf",
+							},{
+								value: "enable_headphone",
+								label: "Disable Deaf",
+							},{
+								value: "disable_headphone",
+								label: "Enable Deaf",
+							},
+						]
+					},
+				]
+			},
 		];
 		this.configs = {
 			discordClientId:{
@@ -71,7 +96,7 @@ class DiscordExtension extends Extension {
 				value: "",
 			},
 		};
-		this.initExtension()
+		this.initExtension();
 	}
 
 	// Executes when the extensions loaded every time the app start.
@@ -142,10 +167,28 @@ class DiscordExtension extends Extension {
 		}
 	}
 
+	async _headphoneControl(args){
+		switch (args.action){
+			case 'toggle_headphone':
+				const settings = await this._client.getVoiceSettings();
+				return await this._client.setVoiceSettings({deaf: !settings.deaf});
+			case 'enable_headphone':
+				return await this._client.setVoiceSettings({
+					deaf: false
+				});
+			case 'disable_headphone':
+				return await this._client.setVoiceSettings({
+					deaf: true
+				});
+		}
+	}
+
 	execute(action, args) {
 		switch(action){
 			case 'microphone':
 				return this._microphoneControl(args);
+			case 'headphone':
+				return this._headphoneControl(args);
 		}
 	};
 }
