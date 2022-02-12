@@ -75,6 +75,12 @@ class DiscordExtension extends Extension {
 					},
 				]
 			},
+			{
+				label: 'Disconnect Voice Channel',
+				value: "disconnect-voice",
+				icon: 'phone-slash',
+				color: '#5865F2',
+			}
 		];
 		this.configs = {
 			discordClientId:{
@@ -183,12 +189,18 @@ class DiscordExtension extends Extension {
 		}
 	}
 
+	async _connectVoiceControl(args){
+		return await this._client.selectVoiceChannel(args.channel_id)
+	}
+
 	execute(action, args) {
 		switch(action){
 			case 'microphone':
 				return this._microphoneControl(args);
 			case 'headphone':
 				return this._headphoneControl(args);
+			case 'disconnect-voice':
+				return this._connectVoiceControl(args);
 		}
 	};
 }
