@@ -1,0 +1,7 @@
+name: Discord Deckboard
+package: discord-deckboard
+version: 0.0.1
+description: A plugin to execute Discord actions from Deckboard
+author: Aislan Dener
+license: MIT
+repository: "https://github.com/aislandener/discord-deckboard"

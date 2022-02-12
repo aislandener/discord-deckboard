@@ -1,0 +1,15 @@
+{
+  "name": "discord-deckboard",
+  "version": "0.0.1",
+  "description": "A plugin to execute Discord actions from Deckboard",
+  "main": "index.js",
+  "scripts": {
+    "build": "deckboard-kit --build"
+  },
+  "author": "Aislan Dener",
+  "license": "MIT",
+  "dependencies": {
+    "deckboard-kit": "^0.3.0",
+    "discord-rpc": "^4.0.1"
+  }
+}
