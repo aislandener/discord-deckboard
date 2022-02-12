@@ -126,27 +126,26 @@ class DiscordExtension extends Extension {
 		}
 	}
 
-	execute(action, arg) {
+	async _microphoneControl(args){
+		switch (args.action){
+			case 'toggle_microphone':
+				const settings = await this._client.getVoiceSettings();
+				return await this._client.setVoiceSettings({mute: !settings.mute});
+			case 'enable_microphone':
+				return await this._client.setVoiceSettings({
+					mute: false
+				});
+			case 'disable_microphone':
+				return await this._client.setVoiceSettings({
+					mute: true
+				});
+		}
+	}
+
+	execute(action, args) {
 		switch(action){
 			case 'microphone':
-				switch (arg.action){
-					case 'toggle_microphone':
-						this._client.getVoiceSettings().then(settings => {
-							this._client.setVoiceSettings({mute: !settings.mute});
-						});
-						break;
-					case 'enable_microphone':
-						this._client.setVoiceSettings({
-							mute: false
-						});
-						break;
-					case 'disable_microphone':
-						this._client.setVoiceSettings({
-							mute: true
-						});
-						break;
-				}
-				break;
+				return this._microphoneControl(args);
 		}
 	};
 }
