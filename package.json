@@ -1,11 +1,11 @@
 {
   "name": "discord-deckboard",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A plugin to execute Discord actions from Deckboard",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/deckboard-kit --build",
-    "install": "./node_modules/.bin/deckboard-kit --install"
+    "build": "deckboard-kit --build",
+    "install": "deckboard-kit --install"
   },
   "author": {
     "name": "Aislan Dener Souza Vicentini",
