@@ -4,12 +4,12 @@
 
 const RPC = require('discord-rpc');
 const ncp = require('copy-paste');
-const { dialog } = require('electron');
 const { Extension, log, INPUT_METHOD, PLATFORMS } = require('deckboard-kit');
 
 class DiscordExtension extends Extension {
 	constructor(props) {
 		super(props);
+		this.dialog = props.dialog;
 		this.setValue = props.setValue;
 		this._redirectUri = 'https://discord.com';
 		this._scopes = [
@@ -143,8 +143,9 @@ class DiscordExtension extends Extension {
 				redirectUri: this._redirectUri,
 				accessToken: this.configs.discordAccessToken.value
 			});
-			if(this.configs.discordAccessToken.value === ''){
-				await dialog.showMessageBox(null,{
+
+			if(!this.configs.discordAccessToken.value){
+				await this.dialog.showMessageBox(null,{
 					type: 'info',
 					buttons: ['Copy','OK'],
 					defaultId: 0,
@@ -158,7 +159,10 @@ class DiscordExtension extends Extension {
 	}
 
 	async _microphoneControl(args){
-		switch (args.action){
+		if(!this._client || !this._client.accessToken)
+			return await this.initPlugin();
+
+		switch(args.action) {
 			case 'toggle_microphone':
 				const settings = await this._client.getVoiceSettings();
 				return await this._client.setVoiceSettings({mute: !settings.mute});
@@ -174,7 +178,10 @@ class DiscordExtension extends Extension {
 	}
 
 	async _headphoneControl(args){
-		switch (args.action){
+		if(!this._client || !this._client.accessToken)
+			return await this.initPlugin();
+
+		switch(args.action){
 			case 'toggle_headphone':
 				const settings = await this._client.getVoiceSettings();
 				return await this._client.setVoiceSettings({deaf: !settings.deaf});
@@ -190,6 +197,9 @@ class DiscordExtension extends Extension {
 	}
 
 	async _connectVoiceControl(args){
+		if(!this._client.accessToken)
+			return await this.initPlugin();
+
 		return await this._client.selectVoiceChannel(args.channel_id)
 	}
 
