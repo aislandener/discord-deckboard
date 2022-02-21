@@ -105,6 +105,19 @@ class DiscordExtension extends Extension {
                         ]
                     }
                 ]
+            },
+            {
+                label: 'Connect Voice',
+                value: 'connect-voice',
+                icon: 'phone',
+                color: '#5865F2',
+                input: [
+                    {
+                        label: "Server",
+                        ref: "connectGuild",
+                        type: 'input:autocomplete',
+                    }
+                ]
             }
         ];
         this.configs = {
@@ -145,12 +158,17 @@ class DiscordExtension extends Extension {
 
 
     getAutocompleteOptions(ref) {
-        // switch (ref) {
-        // 	case "mediaID":
-        // 		return this.getMemeboxAction();
-        // 	default:
-        // 		return [];
-        // }
+        log.error(ref);
+        switch (ref) {
+        	case "connectGuild":
+                return [{
+                    value: "test",
+                    label: "teste",
+                }];
+        		//return this.getMemeboxAction();
+        	default:
+        		return [];
+        }
 
     }
 
@@ -181,35 +199,29 @@ class DiscordExtension extends Extension {
         }
     }
 
-    async _microphoneControl(args) {
-        switch (args.action) {
-            case 'toggle_microphone':
-                const settings = await this._client.getVoiceSettings();
-                return await this._client.setVoiceSettings({mute: !settings.mute});
-            case 'enable_microphone':
-                return await this._client.setVoiceSettings({
-                    mute: false
-                });
-            case 'disable_microphone':
-                return await this._client.setVoiceSettings({
-                    mute: true
-                });
+    async _microphoneControl({action}) {
+        const functions = {
+            toggle_microphone: async () => await this._client.setVoiceSettings({mute: !(await this._client.getVoiceSettings()).mute}),
+            enable_microphone: async () => await this._client.setVoiceSettings({mute: false}),
+            disable_microphone: async () => await this._client.setVoiceSettings({mute: true}),
+        }
+        const executeFunction = functions[action];
+        if(executeFunction){
+            return await executeFunction();
         }
     }
 
-    async _headphoneControl(args) {
-        switch (args.action) {
-            case 'toggle_headphone':
-                const settings = await this._client.getVoiceSettings();
-                return await this._client.setVoiceSettings({deaf: !settings.deaf});
-            case 'enable_headphone':
-                return await this._client.setVoiceSettings({
-                    deaf: false
-                });
-            case 'disable_headphone':
-                return await this._client.setVoiceSettings({
-                    deaf: true
-                });
+    async _headphoneControl({action}) {
+
+        const functions = {
+            toggle_headphone: async () => await this._client.setVoiceSettings({deaf: !(await this._client.getVoiceSettings()).deaf}),
+            enable_headphone: async () => await this._client.setVoiceSettings({deaf: false}),
+            disable_headphone: async () => await this._client.setVoiceSettings({deaf: true}),
+        }
+
+        const executeFunction = functions[action];
+        if(executeFunction){
+            return await executeFunction();
         }
     }
 
@@ -217,29 +229,21 @@ class DiscordExtension extends Extension {
         return await this._client.selectVoiceChannel(args.channel_id)
     }
 
-    async _changeVoiceInput(args){
-        const input = {
-            toggle_input: async () => {
-                const {mode} = await this._client.getVoiceSettings();
-                return await this._client.setVoiceSettings({
-                    mode:{
-                        type: mode.type === 'PUSH_TO_TALK' ? 'VOICE_ACTIVITY' : 'PUSH_TO_TALK'
-                    }
-                })
-            },
-            push_to_talk: async () => await this._client.setVoiceSettings({
-                mode:{
-                    type: 'PUSH_TO_TALK'
+    async _changeVoiceInput({action}) {
+        const functions = {
+            toggle_input: async () => await this._client.setVoiceSettings({
+                mode: {
+                    type: (await this._client.getVoiceSettings()).mode.type === 'PUSH_TO_TALK' ? 'VOICE_ACTIVITY' : 'PUSH_TO_TALK'
                 }
             }),
-            voice_activity: async () => await this._client.setVoiceSettings({
-                mode:{
-                    type: 'VOICE_ACTIVITY'
-                }
-            })
+            push_to_talk: async () => await this._client.setVoiceSettings({mode: {type: 'PUSH_TO_TALK'}}),
+            voice_activity: async () => await this._client.setVoiceSettings({mode: {type: 'VOICE_ACTIVITY'}})
         };
 
-        return await input[args.action]();
+        const executeFunction = functions[action];
+        if(executeFunction){
+            return await executeFunction();
+        }
     }
 
     execute(action, args) {
