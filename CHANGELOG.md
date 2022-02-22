@@ -1,3 +1,7 @@
+# 1.1.0
+
+* Rename Variables better.
+
 # 1.0.0
 
 * Define configs in modal Extensions.
