@@ -106,19 +106,19 @@ class DiscordExtension extends Extension {
                     }
                 ]
             },
-            {
-                label: 'Connect Voice',
-                value: 'connect-voice',
-                icon: 'phone',
-                color: '#5865F2',
-                input: [
-                    {
-                        label: "Server",
-                        ref: "connectGuild",
-                        type: 'input:autocomplete',
-                    }
-                ]
-            }
+            // {
+            //     label: 'Connect Voice',
+            //     value: 'connect-voice',
+            //     icon: 'phone',
+            //     color: '#5865F2',
+            //     input: [
+            //         {
+            //             label: "Server",
+            //             ref: "connectGuild",
+            //             type: 'input:autocomplete',
+            //         }
+            //     ]
+            // }
         ];
         this.configs = {
             discordClientId: {
@@ -247,7 +247,9 @@ class DiscordExtension extends Extension {
         }
     }
 
-    execute(action, args) {
+    async execute(action, args) {
+        if(!this._client || !this._client.accessToken)
+            return await this.initPlugin();
         switch (action) {
             case 'microphone':
                 return this._microphoneControl(args);

@@ -1,6 +1,8 @@
 # 1.1.0
 
 * Rename Variables better.
+* Change Input Method.
+* Update for Deckboard 2.0
 
 # 1.0.0
 
