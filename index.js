@@ -106,19 +106,19 @@ class DiscordExtension extends Extension {
                     }
                 ]
             },
-            // {
-            //     label: 'Connect Voice',
-            //     value: 'connect-voice',
-            //     icon: 'phone',
-            //     color: '#5865F2',
-            //     input: [
-            //         {
-            //             label: "Server",
-            //             ref: "connectGuild",
-            //             type: 'input:autocomplete',
-            //         }
-            //     ]
-            // }
+            {
+            label: 'Connect Voice',
+             value: 'connect-voice',
+            icon: 'phone',
+            color: '#5865F2',
+            input: [
+             {
+            label: "Voice Channel ID",
+             ref: "channel_id",
+            type: INPUT_METHOD.INPUT_TEXT,
+            }
+            ]
+           }
         ];
         this.configs = {
             discordClientId: {
@@ -229,7 +229,9 @@ class DiscordExtension extends Extension {
     async _connectVoiceControl(args) {
         return await this._client.selectVoiceChannel(args.channel_id)
     }
-
+    async _connectVoiceChannel(args) {
+await this._client.selectVoiceChannel() == await this._client.selectVoiceChannel(args.channel_id) ? await this._client.selectVoiceChannel() : await this._client.selectVoiceChannel(args.channel_id)
+    }
     async _changeVoiceInput({action}) {
         const functions = {
             toggle_input: async () => await this._client.setVoiceSettings({
@@ -257,6 +259,8 @@ class DiscordExtension extends Extension {
                 return this._headphoneControl(args);
             case 'disconnect-voice':
                 return this._connectVoiceControl(args);
+            case 'connect-voice':
+                return this._connectVoiceChannel(args);
             case 'change-input':
                 return this._changeVoiceInput(args);
         }
