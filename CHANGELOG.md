@@ -1,3 +1,7 @@
+# 1.1.1
+
+* Added Voice Channel Join
+
 # 1.1.0
 
 * Rename Variables better.
