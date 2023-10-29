@@ -1,6 +1,6 @@
 name: Discord Deckboard
 package: discord-deckboard
-version: 1.1.1
+version: 1.1.2
 description: A plugin to execute Discord actions from Deckboard - Update OsmanCitci
 author: Aislan Dener Souza Vicentini
 license: MIT
