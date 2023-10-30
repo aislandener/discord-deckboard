@@ -1,1 +1,16 @@
-{"discord-deckboard":{"discordAccessToken":{"descriptions":"Access Token in OAuth2 App","name":"Access Token (not distribute)","type":"text","value":null},"discordClientId":{"descriptions":"Client ID in OAuth2 App","name":"Client ID","type":"text","value":""},"discordClientSecret":{"descriptions":"Client Secret in OAuth2 App","name":"Client Secret (not distribute)","type":"text","value":""}}}
+{
+  "discord-deckboard": {
+    "discordClientId": {
+      "descriptions": "Client ID in OAuth2 App",
+      "name": "Client ID",
+      "type": "text",
+      "value": ""
+    },
+    "discordClientSecret": {
+      "descriptions": "Client Secret in OAuth2 App",
+      "name": "Client Secret (not distribute)",
+      "type": "text",
+      "value": ""
+    }
+  }
+}

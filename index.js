@@ -10,6 +10,7 @@ class DiscordExtension extends Extension {
     super(props);
     this.dialog = props.dialog;
     this.setValue = props.setValue;
+    this.data = props.data;
     this._redirectUri = "https://discord.com";
     this._scopes = [
       "identify",
@@ -118,9 +119,9 @@ class DiscordExtension extends Extension {
         color: "#5865F2",
         input: [
           {
-            label: "Voice Channel ID",
+            label: "Select voice channel",
             ref: "channel_id",
-            type: INPUT_METHOD.INPUT_TEXT,
+            type: "input:autocomplete",
           },
         ],
       },
@@ -144,7 +145,7 @@ class DiscordExtension extends Extension {
 
   // Executes when the extensions loaded every time the app start.
   initExtension() {
-    this.initPlugin();
+    this.initPlugin().catch((e) => log.error(e));
   }
 
   get selections() {
@@ -157,16 +158,11 @@ class DiscordExtension extends Extension {
   }
 
   getAutocompleteOptions(ref) {
-    log.error(ref);
     switch (ref) {
       case "connectGuild":
-        return [
-          {
-            value: "test",
-            label: "teste",
-          },
-        ];
-      //return this.getMemeboxAction();
+        return this._getGuilds();
+      case "channel_id":
+        return this._getVoiceChannels();
       default:
         return [];
     }
@@ -185,6 +181,42 @@ class DiscordExtension extends Extension {
     } catch (e) {
       log.error(e);
     }
+  }
+
+  async _getGuilds() {
+    return await this._client
+      .getGuilds()
+      .then(({ guilds }) =>
+        guilds.map(({ id, name }) => ({ value: id, label: name }))
+      );
+  }
+
+  async _getVoiceChannels() {
+    const guilds = await this._client
+      .getGuilds()
+      .then(({ guilds }) =>
+        guilds.map(({ id, name }) => ({ value: id, label: name }))
+      );
+
+    const channels = [];
+    for (let guild of guilds) {
+      let guildChannels = await this._client
+        .getChannels(guild.value)
+        .then((channels) => channels.filter(({ type }) => type === 2));
+
+      guildChannels
+        .map((channel) => ({
+          value: channel.id,
+          label: guild.label + " - " + channel.name,
+        }))
+        .forEach((guild) => {
+          channels.push(guild);
+        });
+    }
+
+    //log.error(channels);
+
+    return channels;
   }
 
   async _microphoneControl({ action }) {
@@ -226,6 +258,7 @@ class DiscordExtension extends Extension {
     return await this._client.selectVoiceChannel(args.channel_id);
   }
   async _connectVoiceChannel(args) {
+    log.error(args);
     (await this._client.selectVoiceChannel()) ==
     (await this._client.selectVoiceChannel(args.channel_id))
       ? await this._client.selectVoiceChannel()
