@@ -2,14 +2,17 @@
  * @autor Aislan Dener <https://github.com/aislandener>
  */
 
+const util = require('util')
 const RPC = require("discord-rpc");
 const { Extension, log, INPUT_METHOD, PLATFORMS } = require("deckboard-kit");
 
 class DiscordExtension extends Extension {
   constructor(props) {
     super(props);
+    log.error(util.inspect(props, false, null, false /* enable colors */))
     this.dialog = props.dialog;
     this.setValue = props.setValue;
+    this.setLabel = props.setLabel;
     this._redirectUri = "https://discord.com";
     this._scopes = [
       "identify",
@@ -25,6 +28,20 @@ class DiscordExtension extends Extension {
     this.platforms = [PLATFORMS.WINDOWS, PLATFORMS.MAC, PLATFORMS.LINUX];
     this.inputs = [
       {
+        label: 'Toggle Microphone',
+        value: "toggle-microphone",
+        icon: "microphone",
+        mode: 'custom-value',
+        color: '#5865F2'
+      },
+      {
+        label: 'Toggle Headphone',
+        value: "toggle-headphone",
+        icon: "headphones",
+        mode: 'custom-value',
+        color: '#5865F2'
+      },
+      {
         label: "Microphone",
         value: "microphone",
         icon: "microphone",
@@ -35,10 +52,6 @@ class DiscordExtension extends Extension {
             ref: "action",
             type: INPUT_METHOD.INPUT_SELECT,
             items: [
-              {
-                value: "toggle_microphone",
-                label: "Toggle Microphone",
-              },
               {
                 value: "enable_microphone",
                 label: "Enable Microphone",
@@ -62,10 +75,6 @@ class DiscordExtension extends Extension {
             ref: "action",
             type: INPUT_METHOD.INPUT_SELECT,
             items: [
-              {
-                value: "toggle_headphone",
-                label: "Toggle Deaf",
-              },
               {
                 value: "enable_headphone",
                 label: "Disable Deaf",
@@ -127,9 +136,9 @@ class DiscordExtension extends Extension {
     ];
     this.configs = {
       discordClientId: {
-        type: "text",
-        name: "Client ID",
         descriptions: "Client ID in OAuth2 App",
+        name: "Client ID",
+        type: "text",
         value: "",
       },
       discordClientSecret: {
@@ -156,20 +165,8 @@ class DiscordExtension extends Extension {
     ];
   }
 
-  getAutocompleteOptions(ref) {
-    log.error(ref);
-    switch (ref) {
-      case "connectGuild":
-        return [
-          {
-            value: "test",
-            label: "teste",
-          },
-        ];
-      //return this.getMemeboxAction();
-      default:
-        return [];
-    }
+  _labelMuteDeaf(value) {
+    return value ? 'OFF' : 'ON';
   }
 
   async initPlugin() {
@@ -182,17 +179,33 @@ class DiscordExtension extends Extension {
         scopes: this._scopes,
         redirectUri: this._redirectUri,
       });
+
+      this.setValue({ 'toggle-microphone': this._labelMuteDeaf((await this._client.getVoiceSettings()).mute) });
+      this.setValue({ 'toggle-headphone': this._labelMuteDeaf((await this._client.getVoiceSettings()).deaf) });
     } catch (e) {
       log.error(e);
     }
   }
 
+  async _microphoneControlToggle({ action }) {
+    var newMuteStatus = !(await this._client.getVoiceSettings()).mute;
+    this.setValue({ 'toggle-microphone': this._labelMuteDeaf(newMuteStatus) });
+    await this._client.setVoiceSettings({
+      mute: newMuteStatus,
+    });
+  }
+
+  async _headphoneControlToggle({ action }) {
+    var newDeafStatus = !(await this._client.getVoiceSettings()).deaf;
+    this.setValue({ 'toggle-headphone': this._labelMuteDeaf(newDeafStatus) });
+    await this._client.setVoiceSettings({
+      deaf: newDeafStatus,
+    });
+  }
+
+
   async _microphoneControl({ action }) {
     const functions = {
-      toggle_microphone: async () =>
-        await this._client.setVoiceSettings({
-          mute: !(await this._client.getVoiceSettings()).mute,
-        }),
       enable_microphone: async () =>
         await this._client.setVoiceSettings({ mute: false }),
       disable_microphone: async () =>
@@ -206,10 +219,6 @@ class DiscordExtension extends Extension {
 
   async _headphoneControl({ action }) {
     const functions = {
-      toggle_headphone: async () =>
-        await this._client.setVoiceSettings({
-          deaf: !(await this._client.getVoiceSettings()).deaf,
-        }),
       enable_headphone: async () =>
         await this._client.setVoiceSettings({ deaf: false }),
       disable_headphone: async () =>
@@ -227,7 +236,7 @@ class DiscordExtension extends Extension {
   }
   async _connectVoiceChannel(args) {
     (await this._client.selectVoiceChannel()) ==
-    (await this._client.selectVoiceChannel(args.channel_id))
+      (await this._client.selectVoiceChannel(args.channel_id))
       ? await this._client.selectVoiceChannel()
       : await this._client.selectVoiceChannel(args.channel_id);
   }
@@ -238,7 +247,7 @@ class DiscordExtension extends Extension {
           mode: {
             type:
               (await this._client.getVoiceSettings()).mode.type ===
-              "PUSH_TO_TALK"
+                "PUSH_TO_TALK"
                 ? "VOICE_ACTIVITY"
                 : "PUSH_TO_TALK",
           },
@@ -261,6 +270,10 @@ class DiscordExtension extends Extension {
     if (!this._client || !this._client.accessToken)
       return await this.initPlugin();
     switch (action) {
+      case "toggle-microphone":
+        return this._microphoneControlToggle(args);
+      case "toggle-headphone":
+        return this._headphoneControlToggle(args);
       case "microphone":
         return this._microphoneControl(args);
       case "headphone":
